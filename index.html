@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Новая Земля — оффлайн / облачный режим</title>
+  <meta name="description" content="Сайт-справочник для игры Новая Земля — правила, карта, топы и админ-панель">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#6ee7b7;--muted:#9aa4b2;--glass: rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial; margin:0;background:linear-gradient(180deg,#071127 0%, #071827 100%);color:#e6eef6}
+    .container{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:800;color:#022}
+    h1{margin:0;font-size:20px}
+    .nav-buttons{display:flex;gap:8px;align-items:center}
+    button{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;color:inherit;cursor:pointer}
+    button.primary{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#022;border:none}
+    .hero{display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03)}
+    .welcome{padding:22px}
+    .welcome h2{margin:0 0 8px 0}
+    .muted{color:var(--muted);font-size:14px}
+    .map-area img{width:100%;height:auto;border-radius:10px;display:block}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .tabs{display:flex;gap:8px;margin-top:12px}
+    .tab{padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.02);cursor:pointer}
+    .grids{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+    .list{padding:12px}
+    table{width:100%;border-collapse:collapse}
+    td,th{padding:6px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
+    th{font-weight:600}
+    .accordion-item{border-radius:10px;margin-top:8px;overflow:hidden}
+    .accordion-head{display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.01);cursor:pointer}
+    .accordion-body{padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+    footer{margin-top:24px;text-align:center;color:var(--muted);font-size:13px}
+    .badge{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.04);font-weight:600}
+    @media(max-width:900px){.hero{grid-template-columns:1fr} .grids{grid-template-columns:1fr}}
+    .flex{display:flex;gap:8px;align-items:center}
+    input[type=file]{display:none}
+    .uploader{display:flex;gap:6px;align-items:center}
+    .toast{position:fixed;right:20px;bottom:20px;background:#0b1220;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)}
+    .small{font-size:13px;color:var(--muted)}
+    .editor{border:1px dashed rgba(255,255,255,0.04);padding:8px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">NZ</div>
+        <div>
+          <h1>Новая Земля</h1>
+          <div class="small muted">Справочник игры — карта, правила, топы и админка</div>
+        </div>
+      </div>
+      <div class="nav-buttons">
+        <div id="roleBadge" class="badge">Гость</div>
+        <button onclick="showSection('map')">Карта</button>
+        <button onclick="showSection('rules')">Правила</button>
+        <button onclick="showSection('tops')">Топы</button>
+        <button class="primary" id="signinBtn">Войти (Google)</button>
+        <button onclick="signOut()">Выйти</button>
+      </div>
+    </header>
+
+    <main class="hero">
+      <section class="card welcome" id="section-welcome">
+        <h2>Приветствую в «Новой Земле»</h2>
+        <p class="muted">Здесь вы найдёте карту, правила и текущие рейтинги племён. Для редактирования используйте вход как Владелец или Админ.</p>
+
+        <div class="controls">
+          <button onclick="showSection('map')">Открыть карту</button>
+          <button onclick="showSection('tops')">Посмотреть топы</button>
+          <button onclick="showSection('rules')">Правила и системы</button>
+          <button onclick="scrollTo('#admin')">Админ-панель</button>
+        </div>
+
+        <div class="tabs">
+          <div class="tab" onclick="quickAction('giveEnergyAll')">+20 ⚡ всем (демо)</div>
+          <div class="tab" onclick="quickAction('randomEvent')">Случайное событие</div>
+        </div>
+
+        <div style="margin-top:12px" id="welcomeText" class="small editor" contenteditable="false">
+          <strong>Новая Земля</strong> — игра в Telegram: игроки создают страны, тратят энергию на разведку и захват территорий. На этой странице вы можете хранить актуальную карту, правила и рейтинги.
+        </div>
+
+      </section>
+
+      <aside class="card map-area">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Карта (загрузите свою)</strong>
+          <div class="small muted">Поддерживается PNG/JPG</div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label class="uploader">
+            <input id="mapFile" type="file" accept="image/*">
+            <button onclick="document.getElementById('mapFile').click()">Загрузить карту</button>
+          </label>
+          <button onclick="resetMap()">Сбросить</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <img id="mapPreview" src="" alt="Карта не загружена" style="display:none">
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="togglePublicEdit()">Переключить публичное редактирование</button>
+          <button onclick="exportData()">Экспорт данных</button>
+          <label style="display:inline-block">
+            <input type="file" id="importFile" accept="application/json" style="display:none">
+            <button onclick="document.getElementById('importFile').click()">Импорт данных</button>
+          </label>
+        </div>
+
+      </aside>
+    </main>
+
+    <div class="card" style="margin-top:14px" id="section-map" hidden>
+      <h3>Интерактивная карта</h3>
+      <p class="muted">Загружайте карту, отмечайте территории (демонстрация статичных маркеров).</p>
+      <div id="mapMarkers" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:12px"></div>
+      <div class="small muted" style="margin-top:10px">Функции: клик по племени — редактировать его параметры (только в режиме админ/владелец).</div>
+    </div>
+
+    <div class="card" style="margin-top:14px" id="section-tops">
+      <h3>Топы племен</h3>
+      <div class="grids">
+        <div class="list card">
+          <h4>Топ по армии</h4>
+          <table id="topArmy"><thead><tr><th>#</th><th>Племя</th><th>Армия</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="list card">
+          <h4>Топ по населению</h4>
+          <table id="topPop"><thead><tr><th>#</th><th>Племя</th><th>Население</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="list card">
+          <h4>Топ по территориям</h4>
+          <table id="topTerr"><thead><tr><th>#</th><th>Племя</th><th>Территории</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="list card">
+          <h4>Топ по уровню счастья</h4>
+          <table id="topHappy"><thead><tr><th>#</th><th>Племя</th><th>Счастье</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px" id="section-rules" hidden>
+      <h3>Правила и системы</h3>
+      <!-- ... (всё как раньше, опущено для краткости) ... -->
+      <div class="accordion-item">
+        <div class="accordion-head" onclick="toggleAccordion(this)">
+          <div>🆕 Для новичков</div>
+          <div class="small muted">Нажмите, чтобы открыть</div>
+        </div>
+        <div class="accordion-body">
+          <p><strong>Если ты новичок, вот как играть:</strong></p>
+          <ol>
+            <li>Придумай название своей страны</li>
+            <li>Сделай флаг</li>
+            <li>Назови столицу</li>
+            <li>Выбери местоположение</li>
+            <li>После этого тебя добавят на карту</li>
+          </ol>
+          <p>Каждый час +20 ⚡️, максимум 100 ⚡️. Налоги: 5—40 ⚡️/час. Слишком высокие — риск восстания.</p>
+        </div>
+      </div>
+      <!-- остальное содержание правил такое же, как у тебя было -->
+    </div>
+
+    <div id="admin" class="card" style="margin-top:14px">
+      <h3>Админ-панель</h3>
+      <div class="small muted">Здесь — быстрые инструменты. Требуется роль Владелец/Админ для редактирования.</div>
+
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card">
+          <h4>Быстрые функции</h4>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="giveEnergyToSelected(20)">+20 ⚡ выбранному</button>
+            <button onclick="modifyTax(15)">Установить налоги +15 ⚡</button>
+            <button onclick="randomEvent()">Случайное событие</button>
+            <button onclick="addDemoPlayer()">Добавить тест-племя</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>Параметры сайта</h4>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div>Владелец: <span id="ownerInfo" class="small muted">не задан</span></div>
+            <button onclick="setAsOwner()">Сделать моим аккаунтом (Владелец)</button>
+            <button onclick="changePassword('owner')">Сменить локальный пароль (если нужно)</button>
+            <div class="small muted">Совет: используйте Firebase для безопасных ролей и общего хранения.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      Сделано для игры «Новая Земля». Рекомендую разместить сайт на статическом хостинге и подключить Firebase для совместной работы.  
+    </footer>
+
+  </div>
+
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <!-- Firebase (compat) — опционально; если не хотите использовать — оставьте как есть -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+  <script>
+    // ---------- Настройка: если хотите использовать Firebase, вставьте сюда вашу конфигурацию ----------
+    // Чтобы не ломать работающее локально, Firebase включается только если вы добавите config.
+    const FIREBASE_ENABLED = true; // переключатель: true чтобы использовать облако (установите в false, если не настраивали)
+    const firebaseConfig = {
+      /* FIREBASE CONFIG — ВСТАВЬТЕ СЮДА ВАШИ ДАННЫЕ:
+      apiKey: "...",
+      authDomain: "...",
+      projectId: "...",
+      storageBucket: "...",
+      messagingSenderId: "...",
+      appId: "..."
+      */
+    };
+
+    // ---------- локальные данные (fallback) ----------
+    const STORAGE_KEY = 'nova_zemlya_data_v1'
+    const defaultData = {
+      meta:{ ownerName:'Владелец', ownerPass:'owner123', adminPass:'admin123', publicEdit:true, ownerUid:null, admins:[] },
+      map:{ dataUrl:'', name:'' },
+      players: [
+        {id:1,name:'МЕТАМФИЛЕНД',army:0,pop:7,territories:24,happy:50,energy:50},
+        {id:2,name:'СнюсЛенд',army:0,pop:7,territories:0,happy:50,energy:50}
+      ],
+      updatedAt: Date.now()
+    }
+
+    // ---------- State and role ----------
+    let state = loadStateLocal()
+    let role = 'guest' // guest | admin | owner | user
+    let currentUser = null // firebase user
+
+    // ---------- Firebase variables ----------
+    let firebaseApp=null, auth=null, db=null, storage=null
+
+    // Initialize Firebase if config present
+    if(FIREBASE_ENABLED && firebaseConfig && firebaseConfig.apiKey){
+      try{
+        firebaseApp = firebase.initializeApp(firebaseConfig)
+        auth = firebase.auth()
+        db = firebase.firestore()
+        storage = firebase.storage()
+        // auth state change
+        auth.onAuthStateChanged(async user=>{
+          currentUser = user
+          if(user){ document.getElementById('signinBtn').innerText = 'Войти как: ' + (user.displayName || user.email)
+            await loadStateCloud() // загрузить актуальное состояние из облака
+          } else {
+            document.getElementById('signinBtn').innerText = 'Войти (Google)'
+            // keep local state if not logged in
+            state = loadStateLocal()
+            updateUI()
+          }
+        })
+      }catch(e){ console.warn('Firebase init error', e); toast('Firebase не инициализирован — работаем локально') }
+    }
+
+    // ---------- Local storage helpers ----------
+    function loadStateLocal(){
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if(!raw){ localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData)); return JSON.parse(JSON.stringify(defaultData)) }
+      try{ return JSON.parse(raw) }catch(e){ localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData)); return JSON.parse(JSON.stringify(defaultData)) }
+    }
+    function saveStateLocal(){
+      state.updatedAt = Date.now()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      renderAll()
+    }
+
+    // ---------- Cloud functions ----------
+    async function loadStateCloud(){
+      if(!db) return
+      const docRef = db.collection('site').doc('state')
+      const snap = await docRef.get()
+      if(!snap.exists){
+        // записать initial state в облако (если вы хотите)
+        await docRef.set(state)
+        toast('Создан начальный state в облаке')
+      } else {
+        // если облачный state новее — используем его
+        const cloud = snap.data()
+        // простой слияющий механизм: выбираем более свежий
+        if(!state.updatedAt || (cloud.updatedAt && cloud.updatedAt > state.updatedAt)){
+          state = cloud
+          saveStateLocal()
+          toast('Данные загружены из облака')
+        } else {
+          // локальные данные новее — сохраняем их в облако
+          await docRef.set(state)
+          toast('Обновлены данные в облаке из локальных')
+        }
+      }
+      updateUI()
+    }
+
+    async function saveStateCloud(){
+      if(!db) return saveStateLocal()
+      // проверка прав: только админ/владелец пишет
+      if(!canEditCloud()) { toast('Нет прав для записи в облако'); return }
+      const docRef = db.collection('site').doc('state')
+      state.updatedAt = Date.now()
+      await docRef.set(state)
+      saveStateLocal() // сохранить локально тоже
+      toast('Данные сохранены в облаке')
+    }
+
+    // Simple cloud permission check (based on meta.ownerUid / meta.admins)
+    function canEditCloud(){
+      if(!currentUser) return false
+      if(!state.meta) return false
+      if(state.meta.ownerUid && currentUser.uid === state.meta.ownerUid) return true
+      if(Array.isArray(state.meta.admins) && state.meta.admins.includes(currentUser.uid)) return true
+      return false
+    }
+
+    // ---------- UI helpers ----------
+    function toast(text, timeout=3000){ const t=document.getElementById('toast'); t.innerText=text; t.style.display='block'; setTimeout(()=>t.style.display='none', timeout) }
+    function renderAll(){ renderMap(); renderTops(); renderMarkers(); updateOwnerInfo(); }
+    function renderMap(){ const img=document.getElementById('mapPreview'); if(state.map && state.map.dataUrl){ img.src = state.map.dataUrl; img.style.display='block' } else img.style.display='none' }
+    function renderMarkers(){ const wrap=document.getElementById('mapMarkers'); if(!wrap) return; wrap.innerHTML=''; (state.players||[]).forEach(p=>{ const el=document.createElement('div'); el.className='card'; el.innerHTML = `<strong>${p.name}</strong><div class="small">Армия: ${p.army} • Поп: ${p.pop} • Терр: ${p.territories} • Счастье: ${p.happy}%</div><div style="margin-top:8px;display:flex;gap:6px"><button onclick="selectPlayer(${p.id})">Выбрать</button><button onclick="openEditPlayer(${p.id})">Редактировать</button></div>`; wrap.appendChild(el); }) }
+    function renderTops(){ renderTable('topArmy','army'); renderTable('topPop','pop'); renderTable('topTerr','territories'); renderTable('topHappy','happy') }
+    function renderTable(elId,key){ const tbody=document.getElementById(elId).querySelector('tbody'); tbody.innerHTML=''; const arr=[...state.players].sort((a,b)=>b[key]-a[key]).slice(0,12); arr.forEach((p,i)=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${i+1}</td><td>${p.name}</td><td>${p[key]}</td><td><button onclick="editRow(${p.id})">✏️</button></td>`; tbody.appendChild(tr); }) }
+
+    // ---------- File upload (image) ----------
+    document.getElementById('mapFile').addEventListener('change', async (e)=>{
+      const f = e.target.files[0]; if(!f) return
+      // client preview quickly
+      const reader = new FileReader(); reader.onload = ()=>{ state.map.dataUrl = reader.result; state.map.name = f.name; renderMap() }
+      reader.readAsDataURL(f)
+      // if firebase enabled -> upload to storage and store URL
+      if(storage && currentUser){
+        const path = `maps/${Date.now()}_${f.name.replace(/\s/g,'_')}`
+        const ref = storage.ref().child(path)
+        await ref.put(f)
+        const url = await ref.getDownloadURL()
+        state.map.dataUrl = url
+        state.map.name = f.name
+        // save to cloud/local
+        await saveStateCloud()
+      } else {
+        // save local only
+        saveStateLocal()
+      }
+      toast('Карта загружена')
+      // reset input
+      e.target.value = ''
+    })
+
+    function resetMap(){ state.map = {dataUrl:'',name:''}; if(storage && currentUser) saveStateCloud(); else saveStateLocal(); renderMap(); }
+
+    // ---------- Players editing ----------
+    function selectPlayer(id){ const p = state.players.find(x=>x.id===id); if(!p) return toast('Племя не найдено'); window.selectedPlayer = p; toast('Выбран: '+p.name) }
+    async function openEditPlayer(id){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); const p = state.players.find(x=>x.id===id); if(!p) return
+      const name = prompt('Название племени', p.name); if(name!==null) p.name = name
+      const army = parseInt(prompt('Армия', p.army)) || p.army
+      const pop = parseInt(prompt('Население', p.pop)) || p.pop
+      const terr = parseInt(prompt('Территории', p.territories)) || p.territories
+      const happy = parseInt(prompt('Счастье (0-100)', p.happy)) || p.happy
+      p.army = army; p.pop = pop; p.territories = terr; p.happy = happy
+      // save to cloud/local
+      if(storage && currentUser) await saveStateCloud(); else saveStateLocal()
+      toast('Сохранено')
+    }
+
+    function editRow(id){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); openEditPlayer(id) }
+
+    // ---------- Roles / Auth ----------
+    // Local canEdit: local publicEdit flag or role variable
+    function canEdit(){ // if cloud enabled, prefer cloud permissions
+      if(storage && currentUser) return canEditCloud()
+      // fallback to local rules (publicEdit or local owner/admin)
+      if(role==='owner' || role==='admin') return true
+      return state.meta && state.meta.publicEdit
+    }
+
+    // Sign in with Google (Firebase)
+    async function signIn(){
+      if(!auth){ toast('Firebase не настроен. Включите конфиг, чтобы использовать облачный режим.'); return }
+      const provider = new firebase.auth.GoogleAuthProvider()
+      try{ await auth.signInWithPopup(provider) }catch(e){ console.error(e); toast('Ошибка входа') }
+    }
+    async function signOut(){ if(auth) await auth.signOut(); role='guest'; currentUser=null; updateUI(); toast('Вышли') }
+
+    // Button binding
+    document.getElementById('signinBtn').addEventListener('click', ()=>{ if(currentUser) toast('Уже в системе'); else signIn() })
+
+    // Set current user as owner (only available if logged in)
+    async function setAsOwner(){
+      if(!currentUser || !db) return toast('Требуется вход в Firebase')
+      state.meta.ownerUid = currentUser.uid
+      state.meta.ownerName = currentUser.displayName || currentUser.email
+      await saveStateCloud()
+      toast('Вы назначены владельцем (обновлено в облаке)')
+    }
+
+    function changePassword(kind){ // локальная смена пароля (в режиме localStorage только)
+      if(!canEdit()) return toast('Только владелец/админ может менять')
+      if(kind==='owner'){ const np=prompt('Новый локальный пароль владельца'); if(np) state.meta.ownerPass=np }
+      else { const np=prompt('Новый локальный пароль админа'); if(np) state.meta.adminPass=np }
+      if(storage && currentUser) saveStateCloud(); else saveStateLocal()
+      toast('Пароль обновлён')
+    }
+
+    function updateUI(){
+      document.getElementById('roleBadge').innerText = role==='guest' ? 'Гость' : (role==='admin' ? 'Админ' : 'Владелец')
+      renderAll()
+      // ownerInfo
+      const ownerSpan = document.getElementById('ownerInfo')
+      if(state.meta && state.meta.ownerName) ownerSpan.innerText = state.meta.ownerName + (state.meta.publicEdit ? ' • публичное редактирование ВКЛ' : ' • публичное редактирование ВЫКЛ')
+      else ownerSpan.innerText = 'не задан'
+    }
+
+    function togglePublicEdit(){ if(!canEdit()) return toast('Требуется роль Владелец/Админ'); state.meta.publicEdit = !state.meta.publicEdit; if(storage && currentUser) saveStateCloud(); else saveStateLocal(); toast('Публичное редактирование: '+(state.meta.publicEdit ? 'ВКЛ' : 'ВЫКЛ')) }
+
+    // ---------- Actions / Quick functions ----------
+    function giveEnergyToSelected(n){ if(!window.selectedPlayer) return toast('Сначала выберите племя'); window.selectedPlayer.energy = Math.min(100, (window.selectedPlayer.energy||0)+n); if(storage && currentUser) saveStateCloud(); else saveStateLocal(); }
+    function modifyTax(n){ state.players.forEach(p=>{ p.happy = Math.max(0, p.happy - Math.round(n/2)) }); if(storage && currentUser) saveStateCloud(); else saveStateLocal(); toast('Налоги изменены — счастье упало') }
+    function quickAction(action){ if(action==='giveEnergyAll'){ state.players.forEach(p=>p.energy = Math.min(100,(p.energy||0)+20)); if(storage && currentUser) saveStateCloud(); else saveStateLocal(); toast('+20 энергии всем племенам') } if(action==='randomEvent') randomEvent() }
+    function randomEvent(){ const ev=Math.random(); if(ev<0.33){ state.players.forEach(p=>p.happy = Math.max(0,p.happy-5)); toast('Произошли пожары — счастье упало') } else if(ev<0.66){ state.players.forEach(p=>p.pop = Math.max(1,p.pop-1)); toast('Эпидемия — население снизилось') } else { state.players.forEach(p=>p.army += 5); toast('Успех в бою — армия выросла') } if(storage && currentUser) saveStateCloud(); else saveStateLocal() }
+
+    // ---------- Export / Import ----------
+    function exportData(){ const data = JSON.stringify(state, null, 2); const blob = new Blob([data],{type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='nova_zemlya_data.json'; a.click(); URL.revokeObjectURL(url); }
+    document.getElementById('importFile').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ()=>{ try{ const obj=JSON.parse(r.result); if(obj && obj.players){ state=obj; if(storage && currentUser) await saveStateCloud(); else saveStateLocal(); toast('Данные импортированы'); } else toast('Неверный файл'); }catch(err){ toast('Ошибка парсинга') } }; r.readAsText(f); e.target.value='' })
+
+    // ---------- Admin helpers ----------
+    function addDemoPlayer(){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); const id=Date.now(); state.players.push({id,name:'Новый_'+id%1000,army:0,pop:5,territories:0,happy:50,energy:50}); if(storage && currentUser) saveStateCloud(); else saveStateLocal(); }
+
+    // ---------- Misc UI ----------
+    function showSection(name){ document.querySelectorAll('[id^="section-"]').forEach(el=>el.hidden=true); const el=document.getElementById('section-'+name); if(el) el.hidden=false; if(name==='map') renderMap(); }
+    function scrollTo(sel){ const el=document.querySelector(sel); if(el) el.scrollIntoView({behavior:'smooth'}) }
+    function toggleAccordion(head){ const body=head.nextElementSibling; if(body.style.display==='block') body.style.display='none'; else body.style.display='block' }
+
+    // ---------- Startup ----------
+    // If firebase enabled and logged in, state loaded in onAuthStateChanged
+    if(!(storage && currentUser)){
+      renderAll()
+    }
+
+    // expose for debugging
+    window.state = state; window.saveStateLocal = saveStateLocal; window.saveStateCloud = saveStateCloud; window.canEdit = canEdit
+
+  </script>
+</body>
+</html>
