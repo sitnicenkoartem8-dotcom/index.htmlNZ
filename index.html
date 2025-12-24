@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Новая Земля — панель управления</title>
-  <meta name="description" content="Новая Земля — правила, карта, топы и админ-панель">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Новая Земля — Объяснение и админка</title>
+  <meta name="description" content="Новая Земля — карта, объяснение систем, топы и админ-панель" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -14,23 +14,28 @@
       --accent2:#60a5fa;
       --muted:#9aa4b2;
       --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
     }
     *{box-sizing:border-box}
     body{
-      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      margin:0; background:linear-gradient(180deg,var(--bg) 0%, #071827 100%); color:#e6eef6;
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      margin:0;
+      background:linear-gradient(180deg,var(--bg),#071827);
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
     }
     .container{max-width:1100px;margin:28px auto;padding:20px}
     header{display:flex;gap:12px;align-items:center;justify-content:space-between}
     .brand{display:flex;gap:12px;align-items:center}
     .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#022}
     h1{margin:0;font-size:20px}
-    .nav-buttons{display:flex;gap:8px;align-items:center}
-    button{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;color:inherit;cursor:pointer}
+    .nav-buttons{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    button{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;color:inherit;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,opacity .18s}
+    button:active{transform:translateY(1px)}
     button.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#022;border:none}
     .hero{display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03)}
+    .card{background:linear-gradient(180deg,var(--glass-2), rgba(255,255,255,0.01));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 8px 24px rgba(2,6,23,0.55);transition:transform .22s ease,opacity .22s ease;}
+    .card:hover{transform:translateY(-4px)}
     .welcome{padding:22px}
     .muted{color:var(--muted);font-size:14px}
     .map-area img{width:100%;height:auto;border-radius:10px;display:block}
@@ -41,33 +46,34 @@
     table{width:100%;border-collapse:collapse}
     td,th{padding:6px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
     th{font-weight:600}
-    .accordion-item{border-radius:10px;margin-top:8px;overflow:hidden}
-    .accordion-head{display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.01);cursor:pointer}
-    .accordion-body{padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+    .accordion-list{display:flex;flex-direction:column;gap:8px}
+    .accordion-item{border-radius:10px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02)}
+    .accordion-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;user-select:none}
+    .accordion-head .title{display:flex;gap:10px;align-items:center}
+    .accordion-body{padding:0 14px 14px 14px;max-height:0;overflow:hidden;transition:max-height .36s cubic-bezier(.2,.9,.2,1),opacity .28s ease;opacity:0}
+    .accordion-body.open{opacity:1}
+    .accordion-body-inner{padding-top:12px}
+    .accordion-actions{display:flex;gap:8px;margin-top:8px}
     footer{margin-top:24px;text-align:center;color:var(--muted);font-size:13px}
     .badge{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.04);font-weight:600}
-    .muted-small{color:var(--muted);font-size:13px}
     .small{font-size:13px;color:var(--muted)}
-    .editor{border:1px dashed rgba(255,255,255,0.04);padding:8px;border-radius:8px}
-    .hidden{display:none !important}
+    .editor{border:1px dashed rgba(255,255,255,0.04);padding:8px;border-radius:8px;min-height:44px;outline:none}
+    .hidden{display:none!important}
     .uploader{display:flex;gap:6px;align-items:center}
     input[type=file]{display:none}
-    .toast{position:fixed;right:20px;bottom:20px;background:#0b1220;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04)}
+    .toast{position:fixed;right:20px;bottom:20px;background:#0b1220;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);display:none}
     .flex{display:flex;gap:8px;align-items:center}
-    .admin-only{display:none} /* показываем через JS только админам */
-    .admin-badge{background:rgba(110,231,183,0.18);color:#0a2b1f;padding:4px 8px;border-radius:999px;font-weight:700}
-    .panel{margin-top:12px}
-    .input{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .admin-only{display:none}
+    .admin-badge{background:rgba(110,231,183,0.12);color:#042;padding:4px 8px;border-radius:999px;font-weight:700}
+    .modal-back{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:60}
+    .modal{background:#071827;padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);min-width:320px;color:inherit}
     .row{display:flex;gap:8px;align-items:center}
     .col{display:flex;flex-direction:column;gap:8px}
-    .center{text-align:center}
-    .danger{background:#7f1d1d;color:white}
-    @media(max-width:980px){ .hero{grid-template-columns:1fr} .grids{grid-template-columns:1fr} }
-    /* modal */
-    .modal-back{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:40}
-    .modal{background:#071827;padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);min-width:320px;color:inherit}
-    .muted-note{color:var(--muted);font-size:13px}
-    .stack{display:flex;flex-direction:column;gap:8px}
+    .input{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .btn-ghost{background:transparent;border:1px dashed rgba(255,255,255,0.04)}
+    .fade-in{animation:fadeIn .36s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    @media(max-width:980px){.hero{grid-template-columns:1fr} .grids{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -77,34 +83,31 @@
         <div class="logo">NZ</div>
         <div>
           <h1>Новая Земля</h1>
-          <div class="small muted">Справочник игры — карта, правила, топы и админка</div>
+          <div class="small muted">Система племени — карта, справочник и админка</div>
         </div>
       </div>
 
       <div class="nav-buttons">
         <div id="roleBadge" class="badge">Гость</div>
         <button onclick="showSection('map')">Карта</button>
-        <button onclick="showSection('rules')">Правила</button>
+        <button onclick="showSection('explain')">Объяснение</button>
         <button onclick="showSection('tops')">Топы</button>
 
-        <!-- Local login (password) -->
         <button id="localLoginBtn">Войти (локально)</button>
-
-        <!-- Firebase/Google login (optional) -->
         <button class="primary" id="signinBtn">Войти (Google)</button>
         <button id="signoutBtn" class="hidden">Выйти</button>
       </div>
     </header>
 
     <main class="hero">
-      <section class="card welcome" id="section-welcome">
-        <h2>Приветствую в «Новой Земле»</h2>
-        <p class="muted">Здесь — карта, правила и рейтинги. Только администраторы могут изменять глобальные данные. По умолчанию сайт работает локально — чтобы синхронизировать изменения между игроками, подключите облако (Firebase).</p>
+      <section class="card welcome fade-in" id="section-welcome">
+        <h2>Добро пожаловать в «Новую Землю»</h2>
+        <p class="muted">Создавайте племя, управляйте энергией, исследуйте карту и взаимодействуйте с другими игроками. Правки администраторов можно сохранить в облако — тогда они будут видны всем.</p>
 
         <div class="controls">
           <button onclick="showSection('map')">Открыть карту</button>
           <button onclick="showSection('tops')">Посмотреть топы</button>
-          <button onclick="showSection('rules')">Правила и системы</button>
+          <button onclick="showSection('explain')">Объяснение</button>
           <button onclick="scrollTo('#admin')">Админ-панель</button>
         </div>
 
@@ -113,16 +116,15 @@
           <div class="tab" onclick="quickAction('randomEvent')">Случайное событие</div>
         </div>
 
-        <div style="margin-top:12px" id="welcomeText" class="small editor" contenteditable="false">
-          <strong>Новая Земля</strong> — игра в Telegram: игроки создают страны, тратят энергию на разведку и захват территорий. На этой странице вы храните актуальную карту, правила и рейтинги.
+        <div style="margin-top:12px" id="welcomeText" class="small editor" contenteditable="false" title="Редактируйте этот текст как админ">
+          <strong>Новая Земля</strong> — поддержка игры в Telegram: карта, объяснение систем, топы и инструменты администратора.
         </div>
-
       </section>
 
-      <aside class="card map-area">
+      <aside class="card map-area fade-in">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Карта (загрузите свою)</strong>
-          <div class="small muted">Поддерживается PNG/JPG</div>
+          <strong>Карта</strong>
+          <div class="small muted">PNG/JPG. Загружайте карту — локально; после подтверждения — в облако.</div>
         </div>
 
         <div style="margin-top:10px">
@@ -139,78 +141,63 @@
 
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
           <button id="togglePublicEditBtn">Переключить публичное редактирование</button>
-          <button onclick="exportData()">Экспорт данных</button>
+          <button onclick="downloadLocalBackup()">Экспорт локально</button>
           <label>
             <input type="file" id="importFile" accept="application/json" style="display:none">
             <button onclick="document.getElementById('importFile').click()">Импорт данных</button>
           </label>
         </div>
 
-        <div class="small muted" style="margin-top:8px">Примечание: загрузка сохраняет карту локально. В облачном режиме карта будет загружена в Storage и станет доступна всем игрокам.</div>
+        <div class="small muted" style="margin-top:8px">Если Firebase включён и вы вошли как админ/владелец — подтвердите изменения, чтобы они стали видны всем.</div>
       </aside>
     </main>
 
-    <!-- Map section (hidden initially) -->
-    <div class="card" id="section-map" style="margin-top:14px;display:none;">
+    <!-- Карта / Маркеры -->
+    <div id="section-map" class="card fade-in" style="margin-top:14px;display:none;">
       <h3>Интерактивная карта</h3>
-      <p class="muted">Загружайте карту, просматривайте племена и их параметры. Редактирование — только для админов.</p>
-
+      <p class="muted">Кликните племя, чтобы посмотреть данные. Редактирование — только для админов.</p>
       <div id="mapMarkers" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px"></div>
     </div>
 
+    <!-- Объяснение / Системы племени -->
+    <div id="section-explain" class="card fade-in" style="margin-top:14px;display:none;">
+      <h3>🪨 СИСТЕМЫ ПЛЕМЕНИ (ДРЕВНИЕ ВРЕМЕНА)</h3>
+      <div class="small muted">Нажмите на подпункт, чтобы развернуть подробное объяснение. Админ может редактировать текст и сохранять в облако.</div>
+
+      <div style="margin-top:12px" class="accordion-list" id="explainAccordion">
+        <!-- We'll populate accordion items dynamically from JS -->
+      </div>
+    </div>
+
     <!-- Tops -->
-    <div class="card" id="section-tops" style="margin-top:14px;">
+    <div id="section-tops" class="card fade-in" style="margin-top:14px;display:none;">
       <h3>Топы племен</h3>
       <div class="grids">
         <div class="list card">
-          <h4>Топ по армии</h4>
+          <h4>По армии</h4>
           <table id="topArmy"><thead><tr><th>#</th><th>Племя</th><th>Армия</th><th></th></tr></thead><tbody></tbody></table>
         </div>
         <div class="list card">
-          <h4>Топ по населению</h4>
+          <h4>По населению</h4>
           <table id="topPop"><thead><tr><th>#</th><th>Племя</th><th>Население</th><th></th></tr></thead><tbody></tbody></table>
         </div>
         <div class="list card">
-          <h4>Топ по территориям</h4>
+          <h4>По территориям</h4>
           <table id="topTerr"><thead><tr><th>#</th><th>Племя</th><th>Территории</th><th></th></tr></thead><tbody></tbody></table>
         </div>
         <div class="list card">
-          <h4>Топ по уровню счастья</h4>
+          <h4>По счастью</h4>
           <table id="topHappy"><thead><tr><th>#</th><th>Племя</th><th>Счастье</th><th></th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </div>
 
-    <!-- Rules -->
-    <div class="card" id="section-rules" style="margin-top:14px;display:none;">
-      <h3>Правила и системы</h3>
-      <!-- Содержимое правил — можно оставить как было в старой версии -->
-      <div class="accordion-item">
-        <div class="accordion-head" onclick="toggleAccordion(this)">
-          <div>🆕 Для новичков</div>
-          <div class="small muted">Нажмите, чтобы открыть</div>
-        </div>
-        <div class="accordion-body">
-          <p><strong>Если ты новичок, вот как играть:</strong></p>
-          <ol>
-            <li>Придумай название своей страны</li>
-            <li>Сделай флаг</li>
-            <li>Назови столицу</li>
-            <li>Выбери местоположение</li>
-            <li>После этого тебя добавят на карту</li>
-          </ol>
-          <p>Каждый час +20 ⚡️, максимум 100 ⚡️. Налоги: 5—40 ⚡️/час.</p>
-        </div>
-      </div>
-      <!-- можно вставить остальные правила сюда -->
-    </div>
-
-    <!-- Admin panel: скрыт для гостей (покажется только при canEdit()) -->
+    <!-- Admin panel -->
     <div id="admin" class="card admin-only" style="margin-top:14px;">
       <h3>Админ-панель <span id="adminBadge" class="admin-badge">Admin</span></h3>
-      <div class="small muted">Инструменты управления — видны только администраторам.</div>
+      <div class="small muted">Инструменты видны только администраторам/владельцу.</div>
 
-      <div class="panel" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
         <div class="card">
           <h4>Быстрые функции</h4>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -223,7 +210,7 @@
         </div>
 
         <div class="card">
-          <h4>Параметры сайта</h4>
+          <h4>Параметры</h4>
           <div class="col">
             <div>Владелец: <span id="ownerInfo" class="small muted">не задан</span></div>
             <div class="row">
@@ -231,594 +218,497 @@
               <button onclick="assignLocalOwner()">Сделать меня владельцем (локально)</button>
             </div>
             <div class="row">
-              <input id="newAdminEmail" class="input" placeholder="UID для админа (Firebase UID)">
-              <button onclick="addAdminByUid()">Добавить админа (UID)</button>
+              <input id="newAdminUid" class="input" placeholder="UID для админа (Firebase UID)" />
+              <button onclick="addAdminByUid()">Добавить админа</button>
             </div>
             <div class="row">
               <button onclick="changeLocalPasswords()">Поменять локальные пароли</button>
-              <button onclick="resetToDefault()">Сбросить в дефолт</button>
+              <button onclick="resetToDefault()">Сброс в дефолт</button>
             </div>
-            <div class="small muted-note">Совет: подключите Firebase для реального хранения и авторизации. Локальные пароли хранятся в браузере и не защищены.</div>
           </div>
         </div>
       </div>
 
       <div style="margin-top:12px" class="card">
-        <h4>Доп. Админ-инструменты</h4>
+        <h4>Сохранение и синхронизация</h4>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button onclick="exportData()">Экспорт (JSON)</button>
-          <button onclick="forceSave()">Сохранить сейчас (cloud/local)</button>
-          <button onclick="showLastSaved()">Показать время последнего сохранения</button>
+          <button onclick="downloadLocalBackup()">Экспорт локально (JSON)</button>
+          <button onclick="onImportClick()">Импорт (JSON)</button>
+          <button onclick="forceSave()" class="primary">Сохранить сейчас (локально или cloud)</button>
+          <button onclick="pushLocalToCloud()">Подтвердить изменения (в облако)</button>
         </div>
         <div id="lastSaved" class="small muted" style="margin-top:8px"></div>
       </div>
     </div>
 
     <footer>
-      Сделано для игры «Новая Земля». (Рекомендация: для публичного сайта используйте GitHub Pages + подключите Firebase для хранения.)  
+      Сделано для «Новой Земли». Для публичной синхронизации используйте Firebase и настройте правила безопасности.
     </footer>
   </div>
 
-  <div id="toast" class="toast" style="display:none"></div>
+  <div id="toast" class="toast"></div>
 
   <!-- Modal for local login -->
-  <div id="modalLogin" class="modal-back hidden">
+  <div id="modalLogin" class="modal-back hidden" style="display:none">
     <div class="modal">
-      <h3>Локальный вход (пароль)</h3>
-      <div class="stack">
-        <select id="localRoleSelect" class="input">
-          <option value="admin">Админ</option>
-          <option value="owner">Владелец</option>
-        </select>
-        <input id="localPassword" class="input" placeholder="Введите локальный пароль">
-        <div style="display:flex;gap:8px;justify-content:flex-end">
+      <h3>Локальный вход</h3>
+      <div class="col">
+        <select id="localRoleSelect" class="input"><option value="admin">Админ</option><option value="owner">Владелец</option></select>
+        <input id="localPassword" class="input" placeholder="Локальный пароль" />
+        <div style="display:flex;justify-content:flex-end;gap:8px">
           <button onclick="closeModal()">Отмена</button>
           <button class="primary" onclick="localLogin()">Войти</button>
         </div>
-        <div class="muted-note">Локальные пароли хранятся в localStorage и подходят для приватных тестов. Для публичного сервиса — используйте Firebase Auth.</div>
+        <div class="small muted">Локальный вход — удобно для теста. Для публичного сайта используйте Google/Firebase Auth.</div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase (compat) — опционально. Если не используешь, оставь FIREBASE_ENABLED=false -->
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
   <script>
-    /**************************************************************************
-     * CONFIGURATION
-     *
-     * FIREBASE_ENABLED = true/false: включить облачный режим (Firestore + Storage + Auth).
-     * Если включаете, заполните firebaseConfig ниже (вставьте ваш конфиг).
-     *
-     * ВНИМАНИЕ: если вы хотите, чтобы изменения видел каждый пользователь —
-     * включайте Firebase и вставляйте config. Без облака изменения сохраняются
-     * только в localStorage текущего браузера.
-     **************************************************************************/
-    const FIREBASE_ENABLED = false; // установите true только если вставили firebaseConfig
-    const firebaseConfig = {
-      // Вставьте сюда ваш конфиг от Firebase (apiKey, authDomain, projectId, storageBucket, appId ...)
-      // Пример:
-      // apiKey: "AIzaSy...",
-      // authDomain: "project-id.firebaseapp.com",
-      // projectId: "project-id",
-      // storageBucket: "project-id.appspot.com",
-      // messagingSenderId: "....",
-      // appId: "1:...:web:..."
-    };
+  /**************************************************************************
+   * CONFIGURATION: вставлен ваш Firebase-конфиг (как вы просили)
+   * FIREBASE_ENABLED = true — режим облака включён.
+   **************************************************************************/
+  const FIREBASE_ENABLED = true;
+  const firebaseConfig = {
+    apiKey: "AIzaSyCscnMBP6XVMdFRo7TPbn6qmQRtJ045f9I",
+    authDomain: "new-earth-cd366.firebaseapp.com",
+    projectId: "new-earth-cd366",
+    storageBucket: "new-earth-cd366.firebasestorage.app",
+    messagingSenderId: "346630323608",
+    appId: "1:346630323608:web:135d4fd9118404f62e3fed",
+    measurementId: "G-N6BN0H0R9L"
+  };
 
-    /******************************* DATA MODEL ********************************/
-    const STORAGE_KEY = 'nova_zemlya_data_v2';
+  /******************************* DATA MODEL ********************************/
+  const STORAGE_KEY = 'nova_zemlya_data_v4';
+  const defaultData = {
+    meta: {
+      ownerName: 'Владелец',
+      ownerPass: 'owner123',
+      adminPass: 'admin123',
+      publicEdit: false,
+      ownerUid: null,
+      admins: []
+    },
+    map: { dataUrl:'', name:'' },
+    players: [
+      {id:1,name:'МЕТАМФИЛЕНД',army:0,pop:7,territories:24,happy:50,energy:50},
+      {id:2,name:'СнюсЛенд',army:0,pop:7,territories:0,happy:50,energy:50}
+    ],
+    explain: {}, // dynamic blocks for explanation text
+    updatedAt: Date.now()
+  };
 
-    // default — publicEdit:false по умолчанию, чтобы гости не могли редактировать
-    const defaultData = {
-      meta: {
-        ownerName: 'Владелец',
-        ownerPass: 'owner123',   // рекомендую изменить
-        adminPass: 'admin123',   // рекомендую изменить
-        publicEdit: false,       // если true — гости смогут редактировать (небезопасно)
-        ownerUid: null,          // если используем Firebase, сюда пишем UID владельца
-        admins: []               // массив UID админов (cloud mode)
-      },
-      map: { dataUrl: '', name: '' },
-      players: [
-        { id: 1, name: 'МЕТАМФИЛЕНД', army: 0, pop: 7, territories: 24, happy: 50, energy: 50 },
-        { id: 2, name: 'СнюсЛенд', army: 0, pop: 7, territories: 0, happy: 50, energy: 50 }
-      ],
-      updatedAt: Date.now()
-    };
+  // runtime
+  let state = loadStateLocal();
+  let role = 'guest';
+  let currentUser = null;
+  let firebaseApp=null, auth=null, db=null, storage=null, unsubscribe=null;
+  let lastMapFile = null; // store File object until confirmed to upload to storage
 
-    // runtime state
-    let state = loadStateLocal();
-    let role = 'guest'; // guest | admin | owner
-    let currentUser = null;
-
-    // Firebase handles
-    let firebaseApp=null, auth=null, db=null, storage=null, unsubscribeSnapshot=null;
-
-    // Initialize Firebase if enabled
-    if (FIREBASE_ENABLED && firebaseConfig && firebaseConfig.apiKey) {
-      try {
-        firebaseApp = firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        storage = firebase.storage();
-        auth.onAuthStateChanged(async user => {
-          currentUser = user;
-          if (user) {
-            showSignoutButton(true);
-            document.getElementById('signinBtn').innerText = 'Войти как: ' + (user.displayName || user.email);
-            // load cloud and subscribe to updates
-            await subscribeToCloudState();
-          } else {
-            showSignoutButton(false);
-            document.getElementById('signinBtn').innerText = 'Войти (Google)';
-            // unsubscribe and fallback to local
-            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot=null; }
-            state = loadStateLocal();
-            role = 'guest';
-            renderAll();
-            updateVisibility();
-          }
-        });
-      } catch (e) {
-        console.error('Firebase init error', e);
-        toast('Firebase не инициализирован, работаем локально');
-      }
-    } else {
-      // Firebase disabled — ensure UI shows local mode
-      updateVisibility();
-    }
-
-    /* ------------------------------- Storage -------------------------------- */
-    function loadStateLocal() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
-        return JSON.parse(JSON.stringify(defaultData));
-      }
-      try { return JSON.parse(raw); } catch (e) { localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData)); return JSON.parse(JSON.stringify(defaultData)); }
-    }
-    function saveStateLocal() {
-      state.updatedAt = Date.now();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      renderAll();
-      updateLastSaved();
-    }
-
-    async function subscribeToCloudState(){
-      if(!db) return;
-      const docRef = db.collection('site').doc('state');
-      // create if not exists
-      const snap = await docRef.get();
-      if(!snap.exists){
-        await docRef.set(state);
-      }
-      // listen for realtime updates
-      unsubscribeSnapshot = docRef.onSnapshot(snap => {
-        if (!snap.exists) return;
-        const cloud = snap.data();
-        // simple merge: if cloud newer -> use it
-        if(!state.updatedAt || (cloud.updatedAt && cloud.updatedAt > state.updatedAt)){
-          state = cloud;
-          saveStateLocal(); // keep local copy
-          toast('Данные синхронизированы из облака');
+  // Initialize Firebase
+  if(FIREBASE_ENABLED && firebaseConfig && firebaseConfig.apiKey){
+    try {
+      firebaseApp = firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      db = firebase.firestore();
+      storage = firebase.storage();
+      auth.onAuthStateChanged(async user=>{
+        currentUser = user;
+        if(user){
+          document.getElementById('signinBtn').innerText = 'Войти как: ' + (user.displayName || user.email);
+          document.getElementById('signoutBtn').classList.remove('hidden');
+          await subscribeCloud();
         } else {
-          // local newer -> push to cloud (but only if we have rights)
-          // avoid infinite loop using timestamps
+          document.getElementById('signinBtn').innerText = 'Войти (Google)';
+          document.getElementById('signoutBtn').classList.add('hidden');
+          if(unsubscribe){ unsubscribe(); unsubscribe=null; }
+          state = loadStateLocal();
+          role = 'guest';
+          renderAll();
+          updateVisibility();
         }
-        renderAll();
-        updateVisibility();
       });
-      // after subscribing, set role based on current user uid and state.meta
-      role = 'guest';
-      if (currentUser && state.meta) {
-        if (state.meta.ownerUid && currentUser.uid === state.meta.ownerUid) role = 'owner';
-        else if (Array.isArray(state.meta.admins) && state.meta.admins.includes(currentUser.uid)) role = 'admin';
+    } catch(e){ console.error('Firebase init error', e); toast('Firebase не инициализирован — работаем локально'); updateVisibility(); }
+  } else {
+    updateVisibility();
+  }
+
+  /* ---------------- local storage helpers ---------------- */
+  function loadStateLocal(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){ localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData)); return JSON.parse(JSON.stringify(defaultData)); }
+    try{ const parsed = JSON.parse(raw); // ensure explain blocks exist
+      parsed.explain = parsed.explain || {};
+      return parsed;
+    } catch(e){ localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData)); return JSON.parse(JSON.stringify(defaultData)); }
+  }
+  function saveStateLocal(){ state.updatedAt = Date.now(); localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll(); updateLastSaved(); }
+
+  /* ---------------- cloud helpers ---------------- */
+  async function subscribeCloud(){
+    if(!db) return;
+    const ref = db.collection('site').doc('state');
+    const snap = await ref.get();
+    if(!snap.exists){ await ref.set(state); }
+    unsubscribe = ref.onSnapshot(snap=>{
+      if(!snap.exists) return;
+      const cloud = snap.data();
+      if(!state.updatedAt || (cloud.updatedAt && cloud.updatedAt > state.updatedAt)){
+        state = cloud;
+        saveStateLocal(); // persist locally
+        toast('Данные синхронизированы из облака');
       }
-      updateVisibility();
-    }
-
-    async function saveStateCloud(){
-      if(!db) return saveStateLocal();
-      // check permissions: owner or admin only
-      if(!canEditCloud()) { toast('Нет прав для записи в облако'); return; }
-      const docRef = db.collection('site').doc('state');
-      state.updatedAt = Date.now();
-      await docRef.set(state);
-      saveStateLocal();
-      toast('Данные сохранены в облаке');
-      updateLastSaved();
-    }
-
-    function canEditCloud(){
-      if(!currentUser || !state.meta) return false;
-      if(state.meta.ownerUid && currentUser.uid === state.meta.ownerUid) return true;
-      if(Array.isArray(state.meta.admins) && state.meta.admins.includes(currentUser.uid)) return true;
-      return false;
-    }
-
-    function canEdit(){
-      // prefer cloud permission when in cloud mode
-      if (FIREBASE_ENABLED && db && currentUser) return canEditCloud();
-      // else fallback to local role or publicEdit flag
-      if (role === 'owner' || role === 'admin') return true;
-      return state.meta && state.meta.publicEdit === true;
-    }
-
-    /* ------------------------------- UI / Render ----------------------------- */
-    function toast(text, timeout=3000){ const t=document.getElementById('toast'); t.innerText=text; t.style.display='block'; setTimeout(()=>t.style.display='none', timeout); }
-
-    function renderAll(){
-      renderMap();
-      renderMarkers();
-      renderTops();
-      updateOwnerInfo();
-      updateVisibility();
-    }
-
-    function renderMap(){
-      const img = document.getElementById('mapPreview');
-      if(state.map && state.map.dataUrl){
-        img.src = state.map.dataUrl;
-        img.style.display = 'block';
-      } else {
-        img.style.display = 'none';
-      }
-    }
-
-    function renderMarkers(){
-      const wrap = document.getElementById('mapMarkers');
-      if(!wrap) return;
-      wrap.innerHTML = '';
-      const can = canEdit();
-      (state.players || []).forEach(p=>{
-        const el = document.createElement('div'); el.className = 'card';
-        el.innerHTML = `<strong>${escapeHtml(p.name)}</strong>
-          <div class="small">Армия: ${p.army} • Поп: ${p.pop} • Терр: ${p.territories} • Счастье: ${p.happy}%</div>
-          <div style="margin-top:8px;display:flex;gap:6px">
-            <button onclick="selectPlayer(${p.id})">Выбрать</button>
-            ${can ? `<button onclick="openEditPlayer(${p.id})">Редактировать</button>` : ''}
-          </div>`;
-        wrap.appendChild(el);
-      });
-    }
-
-    function renderTops(){
-      renderTable('topArmy','army');
-      renderTable('topPop','pop');
-      renderTable('topTerr','territories');
-      renderTable('topHappy','happy');
-    }
-
-    function renderTable(elId,key){
-      const tbody = document.getElementById(elId).querySelector('tbody');
-      tbody.innerHTML = '';
-      const arr = [...state.players].sort((a,b)=>b[key]-a[key]).slice(0,12);
-      const can = canEdit();
-      arr.forEach((p,i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${p[key]}</td><td>${can?'<button onclick="editRow('+p.id+')">✏️</button>':''}</td>`;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function updateOwnerInfo(){
-      const ownerSpan = document.getElementById('ownerInfo');
-      if(state.meta && state.meta.ownerName) ownerSpan.innerText = state.meta.ownerName + (state.meta.publicEdit ? ' • публичное редактирование ВКЛ' : ' • публичное редактирование ВЫКЛ');
-      else ownerSpan.innerText = 'не задан';
-    }
-
-    function updateVisibility(){
-      // admin-only panel
-      const adminPanel = document.getElementById('admin');
-      if (canEdit()) {
-        adminPanel.classList.remove('admin-only');
-        adminPanel.style.display = 'block';
-      } else {
-        adminPanel.classList.add('admin-only');
-        adminPanel.style.display = 'none';
-      }
-      // role badge
-      const rb = document.getElementById('roleBadge');
-      rb.innerText = role === 'guest' ? 'Гость' : (role==='admin' ? 'Админ' : 'Владелец');
-      // sign in/out buttons
-      showSignoutButton(!!currentUser);
-    }
-
-    function escapeHtml(s){
-      if(!s) return '';
-      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    /* ----------------------------- Map Upload -------------------------------- */
-    // Setup listener after DOM loaded
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const mapFile = document.getElementById('mapFile');
-      if(mapFile) mapFile.addEventListener('change', onMapFileChange);
-      const importFile = document.getElementById('importFile');
-      if(importFile) importFile.addEventListener('change', onImportFileChange);
-      // bind buttons
-      document.getElementById('localLoginBtn').addEventListener('click', ()=>openModal());
-      document.getElementById('signinBtn').addEventListener('click', ()=>{ if(firebaseAvailable()) signInWithGoogle(); else toast('Firebase отключён или не настроен'); });
-      document.getElementById('signoutBtn').addEventListener('click', ()=>{ if(firebaseAvailable()) auth.signOut(); else localLogout(); });
       renderAll();
+      updateVisibility();
     });
+    // set role based on uid
+    role = 'guest';
+    if(currentUser && state.meta){
+      if(state.meta.ownerUid && currentUser.uid === state.meta.ownerUid) role='owner';
+      else if(Array.isArray(state.meta.admins) && state.meta.admins.includes(currentUser.uid)) role='admin';
+    }
+    updateVisibility();
+  }
 
-    function firebaseAvailable(){ return FIREBASE_ENABLED && typeof firebase !== 'undefined' && auth; }
+  async function saveStateCloud(){
+    if(!db) return saveStateLocal();
+    if(!canEditCloud()){ toast('Нет прав для записи в облако'); return; }
+    const ref = db.collection('site').doc('state');
+    state.updatedAt = Date.now();
+    await ref.set(state);
+    saveStateLocal();
+    toast('Данные сохранены в облаке');
+    updateLastSaved();
+  }
 
-    async function onMapFileChange(e){
-      const f = e.target.files[0]; if(!f) return;
-      // quick preview
-      const reader = new FileReader();
-      reader.onload = ()=>{ state.map.dataUrl = reader.result; state.map.name = f.name; renderMap(); }
-      reader.readAsDataURL(f);
-      // if cloud and user logged in -> upload to storage and save public URL
-      if(firebaseAvailable() && currentUser){
-        try{
-          const path = `maps/${Date.now()}_${f.name.replace(/\s+/g,'_')}`;
-          const ref = storage.ref().child(path);
-          await ref.put(f);
-          const url = await ref.getDownloadURL();
-          state.map.dataUrl = url;
-          state.map.name = f.name;
-          await saveStateCloud();
-        }catch(err){ console.error(err); toast('Ошибка загрузки карты в облако'); saveStateLocal(); }
-      } else {
-        saveStateLocal();
+  function canEditCloud(){
+    if(!currentUser || !state.meta) return false;
+    if(state.meta.ownerUid && currentUser.uid === state.meta.ownerUid) return true;
+    if(Array.isArray(state.meta.admins) && state.meta.admins.includes(currentUser.uid)) return true;
+    return false;
+  }
+
+  function canEdit(){
+    if(FIREBASE_ENABLED && db && currentUser) return canEditCloud();
+    if(role==='owner' || role==='admin') return true;
+    return state.meta && state.meta.publicEdit === true;
+  }
+
+  /* ---------------- UI / rendering ---------------- */
+  function toast(text, timeout=3000){
+    const t=document.getElementById('toast'); t.innerText=text; t.style.display='block';
+    setTimeout(()=>t.style.display='none', timeout);
+  }
+
+  function renderAll(){ renderMap(); renderMarkers(); renderTops(); renderExplain(); updateOwnerInfo(); updateVisibility(); updateLastSaved(); }
+
+  function renderMap(){
+    const img=document.getElementById('mapPreview');
+    if(state.map && state.map.dataUrl){ img.src=state.map.dataUrl; img.style.display='block'; }
+    else img.style.display='none';
+  }
+
+  function renderMarkers(){
+    const wrap=document.getElementById('mapMarkers'); if(!wrap) return; wrap.innerHTML=''; const can=canEdit();
+    (state.players||[]).forEach(p=>{
+      const el=document.createElement('div'); el.className='card';
+      el.innerHTML = `
+        <strong>${escapeHtml(p.name)}</strong>
+        <div class="small">Армия: ${p.army} • Поп: ${p.pop} • Терр: ${p.territories} • Счастье: ${p.happy}%</div>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <button onclick="selectPlayer(${p.id})">Выбрать</button>
+          ${can?`<button onclick="openEditPlayer(${p.id})">Редактировать</button>`:''}
+        </div>`;
+      wrap.appendChild(el);
+    });
+  }
+
+  function renderTops(){ renderTable('topArmy','army'); renderTable('topPop','pop'); renderTable('topTerr','territories'); renderTable('topHappy','happy'); }
+  function renderTable(elId,key){
+    const tbody=document.getElementById(elId).querySelector('tbody'); tbody.innerHTML=''; const arr=[...state.players].sort((a,b)=>b[key]-a[key]).slice(0,12); const can=canEdit();
+    arr.forEach((p,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${p[key]}</td><td>${can?'<button onclick="editRow('+p.id+')">✏️</button>':''}</td>`; tbody.appendChild(tr); });
+  }
+
+  function updateOwnerInfo(){ const ownerSpan=document.getElementById('ownerInfo'); if(state.meta && state.meta.ownerName) ownerSpan.innerText = state.meta.ownerName + (state.meta.publicEdit ? ' • публичное редактирование ВКЛ' : ' • публичное редактирование ВЫКЛ'); else ownerSpan.innerText='не задан'; }
+  function updateVisibility(){
+    const adminPanel=document.getElementById('admin');
+    if(canEdit()){ adminPanel.style.display='block'; adminPanel.classList.remove('admin-only'); } else { adminPanel.style.display='none'; adminPanel.classList.add('admin-only'); }
+    document.getElementById('roleBadge').innerText = role==='guest' ? 'Гость' : (role==='admin' ? 'Админ' : 'Владелец');
+    if(currentUser){ document.getElementById('signinBtn').classList.add('hidden'); document.getElementById('signoutBtn').classList.remove('hidden'); }
+    else { document.getElementById('signinBtn').classList.remove('hidden'); document.getElementById('signoutBtn').classList.add('hidden'); }
+    // enable editing of welcomeText
+    const welcome = document.getElementById('welcomeText');
+    welcome.contentEditable = canEdit();
+    welcome.title = canEdit() ? 'Кликните чтобы редактировать. Изменения сохраняются локально — нажмите "Подтвердить изменения" для облака.' : '';
+  }
+
+  function escapeHtml(s){ if(s===undefined || s===null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* ---------------- explain (accordion) rendering & editing ---------------- */
+  // Default blocks (used if state.explain empty)
+  const defaultExplainBlocks = [
+    { id:'energy', title:'🔋 ЭНЕРГИЯ ПЛЕМЕНИ', summary:'Пополнение и максимум', content:
+`⏱️ Каждые 30 минут племя получает 15 энергии.
+🔒 Максимум энергии: 100 (может повышаться с развитием племени).
+Используется на строительство, разведку, походы и набор войска.` },
+    { id:'spend', title:'🛖 РАСХОД ЭНЕРГИИ', summary:'Строительство, разведка, войско', content:
+`🪵 Строительство и быт
+• Улучшение поселения — 10 энергии
+
+🗺 Исследование и расширение
+• Разведка территории — 10–80 энергии
+• Захват территории — 20–80 энергии
+• Отправка разведчиков — 25 энергии
+• Дальний поход — 45 энергии
+
+🗡 Войско и защита
+• 5 воинов — 10 энергии (требуется популяция ≥10)
+• Стена/частокол — 35 энергии` },
+    { id:'research', title:'🧠 ИССЛЕДОВАНИЯ (ПРИМИТИВНЫЕ ТЕХНОЛОГИИ)', summary:'Уровни и стоимость', content:
+`🪓 Улучшение инструментов:
+I — 25 ⚡, II — 50 ⚡, III — 90 ⚡
+
+🛠 Строительное ремесло:
+I — 20 ⚡, II — 40 ⚡, III — 70 ⚡
+
+🌿 Лекарство и шаманство:
+I — 35 ⚡, II — 70 ⚡, III — 100 ⚡` },
+    { id:'storage', title:'🗿 ХРАНИЛИЩЕ ЭНЕРГИИ', summary:'Ёмкость по уровням', content:
+`I уровень — вместимость 100
+II уровень — вместимость 110
+III уровень — вместимость 120` },
+    { id:'taxes', title:'💰 НАЛОГИ В ПЛЕМЕНИ', summary:'Уровни и последствия', content:
+`Вождь может вводить налоги — обязательную отдачу энергии.
+
+Уровни налогов (в день):
+• Низкие: +5 ⚡, +10% счастья
+• Средние: +15 ⚡, −40% счастья
+• Высокие: +30 ⚡, −70% счастья
+
+⚠️ Чем выше налоги — тем выше риск восстания.` },
+    { id:'happy', title:'😊 СЧАСТЬЕ ПЛЕМЕНИ', summary:'Как считать, штрафы и бонусы', content:
+`Счастье 0–100%. Старт 50%.
+Штрафы: активная война −5%/день, долгая (>3 дн) −5%, нехватка еды −10%, плохие условия −5%.
+Бонусы: низкие налоги +10%, отсутствие войн +15%, хорошие условия +15%, святилища +10%.` },
+    { id:'events', title:'🌪 НЕОЖИДАННЫЕ ОБСТОЯТЕЛЬСТВА', summary:'Пожары, эпидемии и т.д.', content:
+`Стихийные или сюжетные события: пожары, эпидемии, землетрясения — эффект на счастье: −5…−20% (временно). Несколько событий суммируются.` }
+  ];
+
+  function renderExplain(){
+    const container = document.getElementById('explainAccordion');
+    container.innerHTML = '';
+    const blocks = Object.keys(state.explain).length ? Object.values(state.explain) : defaultExplainBlocks;
+    blocks.forEach(b=>{
+      const item = document.createElement('div'); item.className='accordion-item';
+      const head = document.createElement('div'); head.className='accordion-head';
+      head.innerHTML = `<div class="title"><div style="font-size:18px">${b.title}</div><div class="small muted">${b.summary||''}</div></div><div class="small muted">Открыть</div>`;
+      head.onclick = ()=>{ toggleAccordion(head); };
+      const body = document.createElement('div'); body.className='accordion-body';
+      const inner = document.createElement('div'); inner.className='accordion-body-inner';
+      const contentDiv = document.createElement('div');
+      contentDiv.innerHTML = `<div class="small" id="explain-${b.id}">${convertNewlinesToHtml(b.content||'')}</div>`;
+      inner.appendChild(contentDiv);
+
+      // actions (edit/save) for admins
+      const actions = document.createElement('div'); actions.className='accordion-actions';
+      const editBtn = document.createElement('button'); editBtn.className='btn-ghost'; editBtn.innerText='Редактировать';
+      editBtn.onclick = (e)=>{ e.stopPropagation(); openExplainEditor(b.id); };
+      actions.appendChild(editBtn);
+      inner.appendChild(actions);
+
+      body.appendChild(inner);
+      item.appendChild(head);
+      item.appendChild(body);
+      container.appendChild(item);
+
+      // ensure max-height set for open/close
+      // store content in state.explain if not present
+      if(!state.explain[b.id]) { state.explain[b.id] = { id:b.id, title:b.title, summary:b.summary, content:b.content }; }
+    });
+  }
+
+  function convertNewlinesToHtml(txt){ return escapeHtml(txt).replace(/\n/g, '<br>'); }
+
+  function toggleAccordion(head){
+    const body = head.nextElementSibling;
+    if(!body) return;
+    const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+    if(isOpen){
+      body.style.maxHeight = '0px';
+      body.classList.remove('open');
+    } else {
+      // close others
+      document.querySelectorAll('.accordion-body').forEach(b=>{ b.style.maxHeight='0px'; b.classList.remove('open'); });
+      // open this
+      body.classList.add('open');
+      body.style.maxHeight = (body.scrollHeight + 20) + 'px';
+    }
+  }
+
+  function openExplainEditor(id){
+    if(!canEdit()) return toast('Требуется роль Админ/Владелец');
+    const block = state.explain[id];
+    const newText = prompt('Редактирование раздела: ' + (block.title||id), block.content || '');
+    if(newText === null) return;
+    block.content = newText;
+    // update DOM immediately
+    const el = document.getElementById('explain-'+id);
+    if(el) el.innerHTML = convertNewlinesToHtml(newText);
+    saveStateLocal();
+    toast('Изменения сохранены локально. Нажмите "Подтвердить изменения (в облако)" чтобы синхронизировать.');
+  }
+
+  /* ---------------- Map upload (local preview + confirm cloud upload) ---------------- */
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const mapFile=document.getElementById('mapFile'); if(mapFile) mapFile.addEventListener('change', onMapFileChange);
+    const importFile=document.getElementById('importFile'); if(importFile) importFile.addEventListener('change', onImportFileChange);
+    document.getElementById('localLoginBtn').addEventListener('click', ()=>openModal());
+    document.getElementById('signinBtn').addEventListener('click', ()=>{ if(firebaseAvailable()) signInWithGoogle(); else toast('Firebase отключён'); });
+    document.getElementById('signoutBtn').addEventListener('click', ()=>{ if(firebaseAvailable()) auth.signOut(); else localLogout(); });
+    // save welcomeText on blur/input
+    const welcome = document.getElementById('welcomeText');
+    welcome.addEventListener('input', ()=>{ state.welcome = welcome.innerText; saveStateLocal(); });
+    welcome.addEventListener('blur', ()=>{ state.welcome = welcome.innerText; saveStateLocal(); });
+    renderAll();
+    updateLastSaved();
+  });
+
+  function firebaseAvailable(){ return FIREBASE_ENABLED && typeof firebase !== 'undefined' && auth; }
+
+  async function onMapFileChange(e){
+    const f = e.target.files[0]; if(!f) return;
+    lastMapFile = f; // store until confirmed to cloud
+    // preview dataURL immediately
+    const reader=new FileReader(); reader.onload=()=>{ state.map.dataUrl = reader.result; state.map.name=f.name; renderMap(); saveStateLocal(); };
+    reader.readAsDataURL(f);
+    e.target.value='';
+    toast('Карта загружена локально. Нажмите "Подтвердить изменения (в облако)" чтобы загрузить в Storage.');
+  }
+
+  function resetMap(){ state.map = {dataUrl:'',name:''}; lastMapFile = null; saveStateLocal(); renderMap(); toast('Карта сброшена локально'); }
+
+  /* ---------------- Players edit ---------------- */
+  function selectPlayer(id){ const p=state.players.find(x=>x.id===id); if(!p) return toast('Племя не найдено'); window.selectedPlayer=p; toast('Выбран: '+p.name); }
+  function editRow(id){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); openEditPlayer(id); }
+  async function openEditPlayer(id){
+    if(!canEdit()) return toast('Требуется роль Админ/Владелец');
+    const p=state.players.find(x=>x.id===id); if(!p) return;
+    const name=prompt('Название племени', p.name); if(name!==null) p.name=name;
+    const army=parseInt(prompt('Армия', p.army))||p.army;
+    const pop=parseInt(prompt('Население', p.pop))||p.pop;
+    const terr=parseInt(prompt('Территории', p.territories))||p.territories;
+    const happy=parseInt(prompt('Счастье (0-100)', p.happy))||p.happy;
+    p.army=army; p.pop=pop; p.territories=terr; p.happy=happy;
+    saveStateLocal();
+    toast('Изменения сохранены локально. Нажмите "Подтвердить изменения (в облако)" чтобы синхронизировать.');
+  }
+
+  /* ---------------- Admin utils ---------------- */
+  function addDemoPlayer(){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); const id=Date.now(); state.players.push({id,name:'Новый_'+id%1000,army:0,pop:5,territories:0,happy:50,energy:50}); saveStateLocal(); }
+  function bulkEditPrompt(){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); const key=prompt('Параметр для массовой правки (name/army/pop/territories/happy)'); if(!key) return; const val=prompt('Новое значение'); if(val===null) return; state.players.forEach(p=>{ if(key==='name') p.name=val; else p[key]=Number(val)||p[key]; }); saveStateLocal(); toast('Массовое редактирование завершено локально'); }
+  function modifyTax(n){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); state.players.forEach(p=>p.happy=Math.max(0,p.happy-Math.round(n/2))); saveStateLocal(); toast('Налоги изменены (локально)'); }
+  function giveEnergyToSelected(n){ if(!window.selectedPlayer) return toast('Сначала выберите племя'); window.selectedPlayer.energy=Math.min(100,(window.selectedPlayer.energy||0)+n); saveStateLocal(); }
+  function randomEvent(){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); const ev=Math.random(); if(ev<0.33) state.players.forEach(p=>p.happy=Math.max(0,p.happy-5)); else if(ev<0.66) state.players.forEach(p=>p.pop=Math.max(1,p.pop-1)); else state.players.forEach(p=>p.army+=5); saveStateLocal(); toast('Случайное событие применено (локально)'); }
+  function resetToDefault(){ if(!confirm('Сбросить все данные в дефолт?')) return; state=JSON.parse(JSON.stringify(defaultData)); saveStateLocal(); toast('Сброшено в дефолт (локально)'); }
+
+  /* ---------------- Export / Import ---------------- */
+  function downloadLocalBackup(){
+    const data=JSON.stringify(state,null,2); const blob=new Blob([data],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='nova_zemlya_data.json'; a.click(); URL.revokeObjectURL(url); toast('Экспорт локального бэкапа завершён'); 
+  }
+  function onImportClick(){ document.getElementById('importFile').click(); }
+  function onImportFileChange(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ()=>{ try{ const obj=JSON.parse(r.result); if(obj && obj.players){ if(!confirm('Импортировать и заменить данные?')) return; state=obj; saveStateLocal(); toast('Данные импортированы локально. Нажмите "Подтвердить изменения (в облако)" для синхронизации.'); } else toast('Неверный файл'); } catch(err){ toast('Ошибка парсинга'); } }; r.readAsText(f); e.target.value=''; }
+
+  /* ---------------- Local auth modal ---------------- */
+  function openModal(){ document.getElementById('modalLogin').style.display='flex'; }
+  function closeModal(){ document.getElementById('modalLogin').style.display='none'; }
+  function localLogin(){
+    const roleSel=document.getElementById('localRoleSelect').value;
+    const pass=document.getElementById('localPassword').value;
+    if(!pass) return toast('Введите пароль');
+    const meta=state.meta||{};
+    if(roleSel==='owner' && pass===meta.ownerPass){ role='owner'; closeModal(); saveStateLocal(); updateVisibility(); toast('Вход как Владелец (локально)'); return; }
+    if(roleSel==='admin' && pass===meta.adminPass){ role='admin'; closeModal(); saveStateLocal(); updateVisibility(); toast('Вход как Админ (локально)'); return; }
+    toast('Неверный локальный пароль');
+  }
+  function assignLocalOwner(){ if(!confirm('Назначить локального владельца?')) return; const name=prompt('Отображаемое имя владельца', state.meta.ownerName||'Владелец'); if(!name) return; state.meta.ownerName=name; state.meta.ownerPass=prompt('Установите локальный пароль владельца', state.meta.ownerPass||''); saveStateLocal(); toast('Локальный владелец назначен'); }
+  function changeLocalPasswords(){ if(!canEdit()) return toast('Только владелец/админ может менять пароли'); const op=prompt('Новый пароль владельца (оставьте пустым чтобы не менять)'); if(op) state.meta.ownerPass=op; const ap=prompt('Новый пароль админа (оставьте пустым чтобы не менять)'); if(ap) state.meta.adminPass=ap; saveStateLocal(); toast('Локальные пароли обновлены'); }
+
+  /* ---------------- Firebase helpers ---------------- */
+  async function signInWithGoogle(){ if(!firebaseAvailable()) return toast('Firebase не настроен'); const provider=new firebase.auth.GoogleAuthProvider(); try{ await auth.signInWithPopup(provider); }catch(e){ console.error(e); toast('Ошибка входа через Google'); } }
+  function localLogout(){ role='guest'; currentUser=null; updateVisibility(); toast('Вышли локально'); }
+  function showLastSaved(){ const ls=state.updatedAt?new Date(state.updatedAt).toLocaleString():'никогда'; document.getElementById('lastSaved').innerText='Последнее сохранение: '+ls; toast('Время последнего сохранения показано'); }
+  function updateLastSaved(){ if(state.updatedAt) document.getElementById('lastSaved').innerText='Последнее сохранение: '+new Date(state.updatedAt).toLocaleString(); }
+
+  async function setAsOwner(){ if(!firebaseAvailable()||!currentUser) return toast('Войдите через Google и включите Firebase'); state.meta.ownerUid=currentUser.uid; state.meta.ownerName=currentUser.displayName||currentUser.email; await saveStateCloud(); toast('Вы назначены владельцем (облако)'); }
+  function addAdminByUid(){ const uid=document.getElementById('newAdminUid').value.trim(); if(!uid) return toast('Введите UID'); state.meta.admins=state.meta.admins||[]; if(!state.meta.admins.includes(uid)) state.meta.admins.push(uid); saveStateLocal(); toast('UID добавлен в админы (локально). Нажмите "Подтвердить изменения (в облако)" чтобы применить в облаке.'); }
+
+  /* ---------------- Navigation and helpers ---------------- */
+  function showSection(name){
+    document.getElementById('section-map').style.display = (name==='map') ? 'block':'none';
+    document.getElementById('section-explain').style.display = (name==='explain') ? 'block':'none';
+    document.getElementById('section-tops').style.display = (name==='tops') ? 'block':'none';
+    if(name==='map') renderMap();
+  }
+  function scrollTo(sel){ const el=document.querySelector(sel); if(el) el.scrollIntoView({behavior:'smooth'}); }
+
+  /* ---------------- Push local changes to cloud (confirm) ---------------- */
+  async function pushLocalToCloud(){
+    if(!firebaseAvailable()) return toast('Firebase отключён или не настроен');
+    if(!currentUser) return toast('Войдите в Google, чтобы подтвердить изменения в облаке');
+    if(!canEditCloud()) return toast('Требуется роль админ/владелец в облаке');
+    try{
+      // if there's a new map file waiting -> upload it first
+      if(lastMapFile){
+        const path = `maps/${Date.now()}_${lastMapFile.name.replace(/\s+/g,'_')}`;
+        const ref = storage.ref().child(path);
+        await ref.put(lastMapFile);
+        const url = await ref.getDownloadURL();
+        state.map.dataUrl = url;
+        state.map.name = lastMapFile.name;
+        lastMapFile = null;
       }
-      e.target.value = '';
-      toast('Карта загружена');
-    }
-
-    function resetMap(){
-      state.map = { dataUrl:'', name:'' };
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-      renderMap();
-      toast('Карта сброшена');
-    }
-
-    /* ---------------------------- Players edit ------------------------------- */
-    function selectPlayer(id){ const p = state.players.find(x=>x.id===id); if(!p) return toast('Племя не найдено'); window.selectedPlayer = p; toast('Выбран: '+p.name); }
-    function editRow(id){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); openEditPlayer(id); }
-
-    async function openEditPlayer(id){
-      if(!canEdit()) return toast('Требуется роль Админ/Владелец');
-      const p = state.players.find(x=>x.id===id); if(!p) return;
-      const name = prompt('Название племени', p.name); if(name!==null) p.name = name;
-      const army = parseInt(prompt('Армия', p.army)) || p.army;
-      const pop = parseInt(prompt('Население', p.pop)) || p.pop;
-      const terr = parseInt(prompt('Территории', p.territories)) || p.territories;
-      const happy = parseInt(prompt('Счастье (0-100)', p.happy)) || p.happy;
-      p.army = army; p.pop = pop; p.territories = terr; p.happy = happy;
-      if(firebaseAvailable() && currentUser) await saveStateCloud(); else saveStateLocal();
-      toast('Сохранено');
-    }
-
-    /* ---------------------------- Admin utilities ---------------------------- */
-    function addDemoPlayer(){
-      if(!canEdit()) return toast('Требуется роль Админ/Владелец');
-      const id = Date.now();
-      state.players.push({id, name:'Новый_'+id%1000, army:0, pop:5, territories:0, happy:50, energy:50});
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-    }
-
-    function bulkEditPrompt(){
-      if(!canEdit()) return toast('Требуется роль Админ/Владелец');
-      const key = prompt('Какой параметр массово менять? (name/army/pop/territories/happy)');
-      if(!key) return;
-      const val = prompt('Новое значение (для name — строка, для чисел — число)');
-      if(val===null) return;
-      state.players.forEach(p=>{
-        if(key === 'name') p.name = val;
-        else p[key] = Number(val) || p[key];
-      });
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-      toast('Массовое редактирование завершено');
-    }
-
-    function modifyTax(n){
-      if(!canEdit()) return toast('Требуется роль Админ/Владелец');
-      state.players.forEach(p => { p.happy = Math.max(0, p.happy - Math.round(n/2)); });
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-      toast('Налоги изменены — счастье упало');
-    }
-
-    function giveEnergyToSelected(n){
-      if(!window.selectedPlayer) return toast('Сначала выберите племя');
-      window.selectedPlayer.energy = Math.min(100, (window.selectedPlayer.energy||0) + n);
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-    }
-
-    function randomEvent(){
-      if(!canEdit()) return toast('Требуется роль Админ/Владелец');
-      const ev = Math.random();
-      if(ev < 0.33) state.players.forEach(p=>p.happy = Math.max(0,p.happy-5));
-      else if(ev < 0.66) state.players.forEach(p=>p.pop = Math.max(1,p.pop-1));
-      else state.players.forEach(p=>p.army += 5);
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-      toast('Событие применено');
-    }
-
-    function resetToDefault(){
-      if(!confirm('Сбросить все данные в дефолт? Это перезапишет текущие данные.')) return;
-      state = JSON.parse(JSON.stringify(defaultData));
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-      toast('Сброшено в дефолт');
-    }
-
-    /* ------------------------- Export / Import ------------------------------- */
-    function exportData(){
-      const data = JSON.stringify(state, null, 2);
-      const blob = new Blob([data],{type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'nova_zemlya_data.json'; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function onImportFileChange(e){
-      const f = e.target.files[0]; if(!f) return;
-      const r = new FileReader();
-      r.onload = async ()=> {
-        try {
-          const obj = JSON.parse(r.result);
-          if(obj && obj.players){
-            if(!confirm('Импортировать файл и заменить текущие данные?')) return;
-            state = obj;
-            if(firebaseAvailable() && currentUser) await saveStateCloud(); else saveStateLocal();
-            toast('Данные импортированы');
-          } else toast('Неверный файл');
-        } catch(err) { toast('Ошибка парсинга'); }
-      };
-      r.readAsText(f);
-      e.target.value = '';
-    }
-
-    /* ------------------------ Local auth & modal ----------------------------- */
-    function openModal(){ document.getElementById('modalLogin').classList.remove('hidden'); }
-    function closeModal(){ document.getElementById('modalLogin').classList.add('hidden'); }
-    function localLogin(){
-      const roleSel = document.getElementById('localRoleSelect').value;
-      const pass = document.getElementById('localPassword').value;
-      if(!pass){ toast('Введите пароль'); return; }
-      const meta = state.meta || {};
-      if(roleSel === 'owner' && pass === meta.ownerPass){
-        role = 'owner';
-        closeModal();
-        toast('Вход выполнен как Владелец (локально)');
-        updateVisibility();
-        return;
-      }
-      if(roleSel === 'admin' && pass === meta.adminPass){
-        role = 'admin';
-        closeModal();
-        toast('Вход выполнен как Админ (локально)');
-        updateVisibility();
-        return;
-      }
-      toast('Неверный локальный пароль');
-    }
-
-    function assignLocalOwner(){
-      if(!confirm('Назначить текущего пользователя владельцем локально (сохранится в localStorage)?')) return;
-      // локально назначаем ownerName по prompt
-      const name = prompt('Имя владельца (отобразится в UI)', state.meta.ownerName || 'Владелец');
-      if(!name) return;
-      state.meta.ownerName = name;
-      state.meta.ownerPass = prompt('Установите локальный пароль владельца', state.meta.ownerPass || '');
-      saveStateLocal();
-      toast('Локальный владелец назначен');
-    }
-
-    function changeLocalPasswords(){
-      if(!canEdit()) return toast('Только владелец/админ может менять пароли');
-      const op = prompt('Новый пароль владельца (оставьте пустым чтобы не менять)', '');
-      if(op) state.meta.ownerPass = op;
-      const ap = prompt('Новый пароль админа (оставьте пустым чтобы не менять)', '');
-      if(ap) state.meta.adminPass = ap;
-      saveStateLocal();
-      toast('Локальные пароли обновлены');
-    }
-
-    /* ------------------------- Firebase helpers ----------------------------- */
-    async function signInWithGoogle(){
-      if(!firebaseAvailable()) return toast('Firebase не настроен');
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try { await auth.signInWithPopup(provider); } catch(err){ console.error(err); toast('Ошибка входа через Google'); }
-    }
-    function localLogout(){ role='guest'; currentUser=null; updateVisibility(); toast('Вышли локально'); }
-    function showSignoutButton(visible){
-      const s = document.getElementById('signoutBtn');
-      const signin = document.getElementById('signinBtn');
-      if(visible){ s.classList.remove('hidden'); signin.classList.add('hidden'); } else { s.classList.add('hidden'); signin.classList.remove('hidden'); }
-    }
-
-    async function setAsOwner(){
-      if(!firebaseAvailable() || !currentUser) return toast('Для назначения владельца в облако войдите через Google и включите Firebase');
-      state.meta.ownerUid = currentUser.uid;
-      state.meta.ownerName = currentUser.displayName || currentUser.email;
+      // push full state
       await saveStateCloud();
-      toast('Вы назначены владельцем в облаке');
+      toast('Все локальные изменения подтверждены и сохранены в облаке');
+    } catch(err){
+      console.error(err);
+      toast('Ошибка при синхронизации в облако');
     }
+  }
 
-    function addAdminByUid(){
-      const uid = document.getElementById('newAdminEmail').value.trim();
-      if(!uid) return toast('Введите UID');
-      state.meta.admins = state.meta.admins || [];
-      if(!state.meta.admins.includes(uid)) state.meta.admins.push(uid);
-      if(firebaseAvailable() && currentUser) saveStateCloud(); else saveStateLocal();
-      toast('UID добавлен как админ (если cloud — синхронизировано)');
+  /* ---------------- helper: force save ---------------- */
+  async function forceSave(){
+    if(firebaseAvailable() && currentUser && canEditCloud()) await pushLocalToCloud();
+    else saveStateLocal();
+    toast('Сохранено');
+  }
+
+  /* ---------------- utility ---------------- */
+  function editRow(id){ if(!canEdit()) return toast('Требуется роль Админ/Владелец'); openEditPlayer(id); }
+  function quickAction(action){ if(action==='giveEnergyAll'){ state.players.forEach(p=>p.energy=Math.min(100,(p.energy||0)+20)); saveStateLocal(); toast('+20 ⚡ всем (локально)'); } else if(action==='randomEvent'){ randomEvent(); } }
+  function showSignoutButton(visible){ const s=document.getElementById('signoutBtn'); const signin=document.getElementById('signinBtn'); if(visible){ s.classList.remove('hidden'); signin.classList.add('hidden'); } else { s.classList.add('hidden'); signin.classList.remove('hidden'); } }
+
+  /* ---------------- startup ---------------- */
+  document.addEventListener('DOMContentLoaded', ()=>{
+    // ensure explain blocks exist
+    if(!state.explain || Object.keys(state.explain).length===0){
+      defaultExplainBlocks.forEach(b => state.explain[b.id] = { id:b.id, title:b.title, summary:b.summary, content:b.content });
+      saveStateLocal();
     }
-
-    /* --------------------------- Utility funcs ------------------------------ */
-    function showLastSaved(){
-      const ls = state.updatedAt ? new Date(state.updatedAt).toLocaleString() : 'никогда';
-      document.getElementById('lastSaved').innerText = 'Последнее сохранение: ' + ls;
-      toast('Показано время последнего сохранения');
-    }
-    function updateLastSaved(){
-      if(state.updatedAt) document.getElementById('lastSaved').innerText = 'Последнее сохранение: ' + new Date(state.updatedAt).toLocaleString();
-    }
-
-    async function forceSave(){
-      if(firebaseAvailable() && currentUser) await saveStateCloud(); else saveStateLocal();
-      toast('Сохранено');
-    }
-
-    /* ---------------------------- Navigation -------------------------------- */
-    function showSection(name){
-      document.getElementById('section-map').style.display = (name==='map') ? 'block' : 'none';
-      document.getElementById('section-rules').style.display = (name==='rules') ? 'block' : 'none';
-      document.getElementById('section-tops').style.display = (name==='tops') ? 'block' : 'none';
-      if(name === 'map') renderMap();
-    }
-    function scrollTo(sel){ const el = document.querySelector(sel); if(el) el.scrollIntoView({behavior:'smooth'}); }
-
-    function toggleAccordion(head){ const body = head.nextElementSibling; if(body.style.display === 'block') body.style.display = 'none'; else body.style.display = 'block'; }
-
-    /* -------------------- startup render and expose for debug ---------------- */
-    document.addEventListener('DOMContentLoaded', ()=>{
-      renderAll();
-      updateLastSaved();
-      // Expose for debugging
-      window._state = state;
-      window._saveLocal = saveStateLocal;
-      window._saveCloud = saveStateCloud;
-      window._canEdit = canEdit;
-    });
+    renderAll();
+    // expose for debug
+    window._state = state;
+    window._saveLocal = saveStateLocal;
+    window._pushCloud = pushLocalToCloud;
+  });
   </script>
-  
-  <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script>
-const FIREBASE_ENABLED = true;
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCscnMBP6XVMdFRo7TPbn6qmQRtJ045f9I",
-  authDomain: "new-earth-cd366.firebaseapp.com",
-  projectId: "new-earth-cd366",
-  storageBucket: "new-earth-cd366.firebasestorage.app",
-  messagingSenderId: "346630323608",
-  appId: "1:346630323608:web:135d4fd9118404f62e3fed",
-  measurementId: "G-N6BN0H0R9L"
-};
-
-  firebase.initializeApp(firebaseConfig);
-
-  // Глобальные объекты Firebase
-  window.firebaseAuth = firebase.auth();
-  window.firebaseDB = firebase.firestore();
-</script>
-
 </body>
 </html>
-
-
-
-
