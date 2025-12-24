@@ -790,7 +790,31 @@
       window._canEdit = canEdit;
     });
   </script>
+  
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCscnMBP6XVMdFRo7TPbn6qmQRtJ045f9I",
+    authDomain: "new-earth-cd366.firebaseapp.com",
+    projectId: "new-earth-cd366",
+    storageBucket: "new-earth-cd366.firebasestorage.app",
+    messagingSenderId: "346630323608",
+    appId: "1:346630323608:web:135d4fd9118404f62e3fed"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  // Глобальные объекты Firebase
+  window.firebaseAuth = firebase.auth();
+  window.firebaseDB = firebase.firestore();
+</script>
+
 </body>
 </html>
+
 
 
