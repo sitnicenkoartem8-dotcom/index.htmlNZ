@@ -876,7 +876,7 @@
             </div>
           </div>
           <div class="p-4 rounded-xl bg-white/5">
-            <h3 class="font-medium mb-3">Экспорт / Импорт</h3>
+            <h3 class="font-medium mb-3">Экспорт / Импорт / Синхронизация</h3>
             <div class="flex flex-wrap gap-2">
               <button onclick="exportData()" class="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm">📥 Экспорт JSON</button>
               <label class="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm cursor-pointer">
@@ -884,7 +884,9 @@
                 <input type="file" id="importFile" accept="application/json" class="hidden">
               </label>
               <button onclick="loadFromCloud()" class="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm">☁️ Загрузить из облака</button>
+              <button onclick="forceReloadFromCloud()" class="px-3 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-sm border border-amber-500/30">🔄 Принудительная синхронизация</button>
             </div>
+            <p class="text-xs text-gray-500 mt-2">Если данные не обновляются — используйте "Принудительная синхронизация"</p>
           </div>
         </div>
 
@@ -923,8 +925,10 @@
           </div>
         </div>
 
-        <div class="text-sm text-gray-500">
-          Последнее сохранение: <span id="lastSaved">—</span>
+        <div class="text-sm text-gray-500 space-y-1">
+          <div>Последнее сохранение: <span id="lastSaved">—</span></div>
+          <div>Статус Firebase: <span id="firebaseStatus" class="text-amber-400">проверка...</span></div>
+          <div>Realtime listener: <span id="listenerStatus" class="text-gray-400">—</span></div>
         </div>
       </div>
     </section>
@@ -1080,16 +1084,20 @@
     };
 
     let firebaseApp, auth, db, storage;
+    let unsubscribeSnapshot = null;
+    let isListeningToCloud = false;
+    
     try {
       firebaseApp = firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
       db = firebase.firestore();
       storage = firebase.storage();
+      console.log('Firebase initialized successfully');
     } catch (e) {
       console.error('Firebase init error:', e);
     }
 
-    const STORAGE_KEY = 'nova_zemlya_v8';
+    const STORAGE_KEY = 'nova_zemlya_v9';
     let state = null;
     let currentUser = null;
     let role = 'guest';
@@ -1503,6 +1511,30 @@
       if (el && state.updatedAt) {
         el.textContent = new Date(state.updatedAt).toLocaleString('ru');
       }
+      
+      // Обновляем статус Firebase
+      const fbStatus = document.getElementById('firebaseStatus');
+      const listenerStatus = document.getElementById('listenerStatus');
+      
+      if (fbStatus) {
+        if (db) {
+          fbStatus.textContent = 'подключён';
+          fbStatus.className = 'text-emerald-400';
+        } else {
+          fbStatus.textContent = 'не подключён';
+          fbStatus.className = 'text-red-400';
+        }
+      }
+      
+      if (listenerStatus) {
+        if (isListeningToCloud) {
+          listenerStatus.textContent = 'активен';
+          listenerStatus.className = 'text-emerald-400';
+        } else {
+          listenerStatus.textContent = 'не активен';
+          listenerStatus.className = 'text-red-400';
+        }
+      }
     }
 
     // Modals
@@ -1735,10 +1767,15 @@
       
       try {
         state.updatedAt = Date.now();
-        await db.collection('site').doc('state').set(state);
+        // Создаём копию без огромных данных карты для быстрой синхронизации
+        const stateToSave = JSON.parse(JSON.stringify(state));
+        
+        await db.collection('site').doc('state').set(stateToSave);
         saveState();
         toast('Сохранено в облако!');
+        console.log('State saved to cloud at', new Date(state.updatedAt).toLocaleString());
       } catch (e) {
+        console.error('Save to cloud error:', e);
         toast('Ошибка: ' + e.message, true);
       }
     }
@@ -1749,15 +1786,89 @@
       try {
         const snap = await db.collection('site').doc('state').get();
         if (snap.exists) {
-          state = snap.data();
+          const cloudData = snap.data();
+          state = cloudData;
           saveState();
           renderAll();
           toast('Загружено из облака');
+          console.log('State loaded from cloud, updatedAt:', new Date(state.updatedAt).toLocaleString());
         } else {
           toast('В облаке нет данных', true);
         }
       } catch (e) {
+        console.error('Load from cloud error:', e);
         toast('Ошибка: ' + e.message, true);
+      }
+    }
+
+    // Инициализация Firebase и синхронизация с облаком
+    async function initFirebaseAndSync() {
+      if (!db) {
+        console.warn('Firebase DB not available');
+        return;
+      }
+
+      try {
+        // Попытка загрузить данные из облака при старте (даже без авторизации)
+        const ref = db.collection('site').doc('state');
+        const snap = await ref.get();
+        
+        if (snap.exists) {
+          const cloudData = snap.data();
+          const localUpdatedAt = state?.updatedAt || 0;
+          const cloudUpdatedAt = cloudData?.updatedAt || 0;
+          
+          console.log('Cloud data found. Cloud time:', cloudUpdatedAt, 'Local time:', localUpdatedAt);
+          
+          // Если облачные данные новее — применяем их
+          if (cloudUpdatedAt > localUpdatedAt) {
+            state = cloudData;
+            saveState();
+            renderAll();
+            console.log('Applied cloud data (newer)');
+          }
+        } else {
+          console.log('No cloud data exists yet');
+        }
+
+        // Устанавливаем realtime listener для автоматической синхронизации
+        setupCloudListener();
+        
+      } catch (e) {
+        console.warn('Initial cloud sync failed:', e);
+      }
+    }
+
+    // Настройка realtime listener для автоматического обновления
+    function setupCloudListener() {
+      if (!db || isListeningToCloud) return;
+      
+      try {
+        const ref = db.collection('site').doc('state');
+        
+        unsubscribeSnapshot = ref.onSnapshot((snap) => {
+          if (!snap.exists) return;
+          
+          const cloudData = snap.data();
+          const localUpdatedAt = state?.updatedAt || 0;
+          const cloudUpdatedAt = cloudData?.updatedAt || 0;
+          
+          // Применяем только если облачные данные новее
+          if (cloudUpdatedAt > localUpdatedAt) {
+            console.log('Realtime update received. Applying cloud data...');
+            state = cloudData;
+            saveState();
+            renderAll();
+            toast('Данные синхронизированы из облака');
+          }
+        }, (error) => {
+          console.warn('Snapshot listener error:', error);
+        });
+        
+        isListeningToCloud = true;
+        console.log('Cloud listener established');
+      } catch (e) {
+        console.warn('Failed to setup cloud listener:', e);
       }
     }
 
@@ -1793,6 +1904,36 @@
       toast('Данные экспортированы');
     }
 
+    // Принудительная перезагрузка из облака (игнорирует время обновления)
+    async function forceReloadFromCloud() {
+      if (!db) return toast('Firebase не настроен', true);
+      
+      try {
+        toast('Загрузка из облака...');
+        const snap = await db.collection('site').doc('state').get();
+        
+        if (snap.exists) {
+          const cloudData = snap.data();
+          state = cloudData;
+          state.updatedAt = Date.now(); // Обновляем локальное время
+          saveState();
+          renderAll();
+          toast('Данные принудительно загружены из облака!');
+          console.log('Force reload completed. Players:', state.players?.length);
+        } else {
+          toast('В облаке нет данных. Создаём...', true);
+          // Если в облаке нет данных — создаём их
+          if (canEditState()) {
+            await saveToCloud();
+            toast('Данные созданы в облаке');
+          }
+        }
+      } catch (e) {
+        console.error('Force reload error:', e);
+        toast('Ошибка: ' + e.message, true);
+      }
+    }
+
     function resetMap() {
       if (!confirm('Сбросить карту?')) return;
       state.map = { dataUrl: '', name: '', updatedAt: null };
@@ -1807,13 +1948,17 @@
     }
 
     // Init
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Сначала загружаем локальные данные для быстрого отображения
       loadState();
       
       const savedRole = localStorage.getItem('localRole');
       if (savedRole) role = savedRole;
       
       renderAll();
+
+      // 2. Затем пытаемся синхронизировать с облаком
+      await initFirebaseAndSync();
 
       document.getElementById('mapUpload').addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -1824,7 +1969,7 @@
           state.map = { dataUrl: reader.result, name: file.name, updatedAt: Date.now() };
           saveState();
           renderMap();
-          toast('Карта загружена');
+          toast('Карта загружена локально. Сохраните в облако для синхронизации.');
         };
         reader.readAsDataURL(file);
         e.target.value = '';
@@ -1852,34 +1997,36 @@
         e.target.value = '';
       });
 
+      // 3. Слушаем изменения авторизации
       if (auth) {
         auth.onAuthStateChanged(async (user) => {
           currentUser = user;
+          
           if (user) {
+            console.log('User signed in:', user.email);
+            
+            // При входе пользователя — перезагружаем данные из облака
             try {
               const snap = await db.collection('site').doc('state').get();
               if (snap.exists) {
                 const cloud = snap.data();
-                if (!state.updatedAt || (cloud.updatedAt && cloud.updatedAt > state.updatedAt)) {
+                const localTime = state?.updatedAt || 0;
+                const cloudTime = cloud?.updatedAt || 0;
+                
+                if (cloudTime > localTime) {
                   state = cloud;
                   saveState();
                   renderAll();
+                  console.log('Applied cloud data after login');
                 }
               }
-            } catch (e) {}
-            
-            db.collection('site').doc('state').onSnapshot((snap) => {
-              if (snap.exists) {
-                const cloud = snap.data();
-                if (cloud.updatedAt && cloud.updatedAt > state.updatedAt) {
-                  state = cloud;
-                  saveState();
-                  renderAll();
-                  toast('Данные синхронизированы');
-                }
-              }
-            });
+            } catch (e) {
+              console.warn('Post-auth cloud fetch failed:', e);
+            }
+          } else {
+            console.log('User signed out');
           }
+          
           updateUI();
           renderAll();
         });
